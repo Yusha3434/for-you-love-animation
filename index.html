@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>For You ❤️</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #080307;
+    font-family: Georgia, "Times New Roman", serif;
+}
+
+#app {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at center, #250914 0%, #10050b 45%, #050205 100%);
+}
+
+/* Canvas */
+canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* INTRO SCREEN */
+#intro {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition:
+        opacity 1s ease,
+        transform 1s ease;
+}
+
+#intro.hide {
+    opacity: 0;
+    transform: scale(1.08);
+    pointer-events: none;
+}
+
+/* Small top text */
+.small-love {
+    color: rgba(255, 190, 215, 0.75);
+    font-size: clamp(14px, 3vw, 22px);
+    font-style: italic;
+    letter-spacing: 4px;
+    margin-bottom: 25px;
+    animation: fadeUp 1.5s ease forwards;
+}
+
+/* FOR YOU */
+.title {
+    position: relative;
+    color: #fff4f8;
+    font-size: clamp(60px, 15vw, 120px);
+    font-weight: bold;
+    font-style: italic;
+    letter-spacing: -3px;
+    text-shadow:
+        0 0 8px rgba(255, 130, 180, .8),
+        0 0 25px rgba(255, 60, 140, .55),
+        0 0 60px rgba(255, 30, 100, .35);
+    animation:
+        titleFloat 3s ease-in-out infinite,
+        fadeUp 1.5s ease forwards;
+}
+
+.title span {
+    color: #ff719f;
+}
+
+/* Main heart */
+.big-heart {
+    position: relative;
+    width: 75px;
+    height: 75px;
+    margin-top: 35px;
+    transform: rotate(-45deg);
+    background: #ff477e;
+    border-radius: 12px;
+    box-shadow:
+        0 0 15px #ff477e,
+        0 0 40px rgba(255, 50, 120, .8),
+        0 0 90px rgba(255, 30, 100, .45);
+    animation: heartBeat 1.3s ease-in-out infinite;
+}
+
+.big-heart::before,
+.big-heart::after {
+    content: "";
+    position: absolute;
+    width: 75px;
+    height: 75px;
+    background: #ff477e;
+    border-radius: 50%;
+}
+
+.big-heart::before {
+    top: -37px;
+    left: 0;
+}
+
+.big-heart::after {
+    top: 0;
+    left: 37px;
+}
+
+/* Subtitle */
+.subtitle {
+    margin-top: 65px;
+    color: rgba(255, 220, 232, .72);
+    font-size: clamp(15px, 3.5vw, 23px);
+    font-style: italic;
+    letter-spacing: 1px;
+    animation: fadeUp 2s ease forwards;
+}
+
+/* OPEN BUTTON */
+#openBtn {
+    position: relative;
+    margin-top: 55px;
+    width: 210px;
+    height: 68px;
+    border: 1px solid rgba(255, 190, 215, .7);
+    border-radius: 40px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 70, 130, .9),
+            rgba(170, 30, 90, .9)
+        );
+    color: white;
+    font-family: Georgia, serif;
+    font-size: 24px;
+    font-style: italic;
+    font-weight: bold;
+    letter-spacing: 4px;
+    cursor: pointer;
+    box-shadow:
+        0 0 15px rgba(255, 50, 130, .7),
+        0 0 40px rgba(255, 30, 110, .35);
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease,
+        background .25s ease;
+    animation:
+        buttonPulse 2s ease-in-out infinite,
+        fadeUp 2.2s ease forwards;
+}
+
+#openBtn:hover {
+    transform: scale(1.08);
+    box-shadow:
+        0 0 25px rgba(255, 80, 150, .9),
+        0 0 70px rgba(255, 30, 110, .55);
+}
+
+#openBtn:active {
+    transform: scale(.94);
+}
+
+.hint {
+    margin-top: 18px;
+    color: rgba(255, 190, 210, .4);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+/* FINAL CENTER TEXT */
+#finalText {
+    position: absolute;
+    z-index: 5;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(.7);
+    opacity: 0;
+    pointer-events: none;
+    color: #fffafa;
+    font-size: clamp(38px, 9vw, 80px);
+    font-weight: bold;
+    font-style: italic;
+    white-space: nowrap;
+    text-align: center;
+    text-shadow:
+        0 0 8px white,
+        0 0 25px #ff719f,
+        0 0 55px rgba(255, 50, 130, .9);
+}
+
+#finalText.show {
+    animation: finalAppear 2s ease forwards;
+}
+
+/* Floating hearts */
+.float-heart {
+    position: absolute;
+    color: rgba(255, 90, 150, .6);
+    font-size: 20px;
+    pointer-events: none;
+    animation: floatUp linear infinite;
+}
+
+/* Animations */
+@keyframes titleFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes heartBeat {
+    0%, 100% {
+        transform: rotate(-45deg) scale(1);
+    }
+    50% {
+        transform: rotate(-45deg) scale(1.12);
+    }
+}
+
+@keyframes buttonPulse {
+    0%, 100% {
+        box-shadow:
+            0 0 15px rgba(255, 50, 130, .7),
+            0 0 40px rgba(255, 30, 110, .3);
+    }
+    50% {
+        box-shadow:
+            0 0 30px rgba(255, 70, 150, .9),
+            0 0 70px rgba(255, 30, 110, .5);
+    }
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(25px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes finalAppear {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(.6);
+    }
+    70% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.08);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+@keyframes floatUp {
+    from {
+        transform: translateY(110vh) translateX(0) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: .7;
+    }
+    90% {
+        opacity: .5;
+    }
+    to {
+        transform: translateY(-15vh) translateX(50px) rotate(25deg);
+        opacity: 0;
+    }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+
+    .title {
+        font-size: 72px;
+    }
+
+    .big-heart {
+        width: 55px;
+        height: 55px;
+    }
+
+    .big-heart::before,
+    .big-heart::after {
+        width: 55px;
+        height: 55px;
+    }
+
+    .big-heart::before {
+        top: -27px;
+    }
+
+    .big-heart::after {
+        left: 27px;
+    }
+
+    #openBtn {
+        width: 190px;
+        height: 62px;
+        font-size: 21px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="app">
+
+    <!-- Canvas for I LOVE YOU heart -->
+    <canvas id="canvas"></canvas>
+
+    <!-- Floating hearts -->
+    <div id="floatingHearts"></div>
+
+    <!-- INTRO -->
+    <section id="intro">
+
+        <div class="small-love">
+            MADE WITH LOVE
+        </div>
+
+        <div class="title">
+            For <span>You</span> 💗
+        </div>
+
+        <div class="big-heart"></div>
+
+        <div class="subtitle">
+            A little something, just for you...
+        </div>
+
+        <button id="openBtn">
+            OPEN
+        </button>
+
+        <div class="hint">
+            TAP TO OPEN ❤️
+        </div>
+
+    </section>
+
+    <!-- FINAL MESSAGE -->
+    <div id="finalText">
+        I Love You ❤️
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   CANVAS SETUP
+========================================================= */
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let W = window.innerWidth;
+let H = window.innerHeight;
+
+function resizeCanvas() {
+
+    W = window.innerWidth;
+    H = window.innerHeight;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+resizeCanvas();
+
+window.addEventListener("resize", resizeCanvas);
+
+
+/* =========================================================
+   FLOATING HEARTS
+========================================================= */
+
+const floatingContainer =
+    document.getElementById("floatingHearts");
+
+function createFloatingHeart() {
+
+    const heart = document.createElement("div");
+
+    heart.className = "float-heart";
+
+    heart.innerHTML =
+        Math.random() > .5 ? "♥" : "♡";
+
+    heart.style.left =
+        Math.random() * 100 + "%";
+
+    heart.style.fontSize =
+        (12 + Math.random() * 22) + "px";
+
+    heart.style.animationDuration =
+        (5 + Math.random() * 8) + "s";
+
+    heart.style.animationDelay =
+        (Math.random() * 5) + "s";
+
+    heart.style.opacity =
+        .2 + Math.random() * .5;
+
+    floatingContainer.appendChild(heart);
+
+    setTimeout(() => {
+        heart.remove();
+    }, 14000);
+}
+
+for (let i = 0; i < 30; i++) {
+    createFloatingHeart();
+}
+
+setInterval(createFloatingHeart, 500);
+
+
+/* =========================================================
+   HEART MATH
+========================================================= */
+
+function heartXY(t) {
+
+    const x =
+        16 * Math.pow(Math.sin(t), 3);
+
+    const y =
+        13 * Math.cos(t)
+        - 5 * Math.cos(2 * t)
+        - 2 * Math.cos(3 * t)
+        - Math.cos(4 * t);
+
+    return {
+        x: x,
+        y: -y
+    };
+}
+
+
+/* =========================================================
+   PARTICLES
+========================================================= */
+
+let particles = [];
+
+const words = [
+    "i love you",
+    "I LOVE YOU",
+    "love you",
+    "I love you"
+];
+
+const colors = [
+    "#ff462d",
+    "#ff8230",
+    "#ff3030",
+    "#ffbd59",
+    "#ff633d"
+];
+
+function createParticles() {
+
+    particles = [];
+
+    const mobile =
+        window.innerWidth < 600;
+
+    const outlineCount =
+        mobile ? 110 : 160;
+
+    const fillCount =
+        mobile ? 80 : 130;
+
+    /*
+       Heart size changes according
+       to screen size.
+    */
+
+    const scale =
+        Math.min(W, H) /
+        48;
+
+    const centerX = W / 2;
+    const centerY = H / 2;
+
+    /*
+       OUTLINE
+    */
+
+    for (let i = 0; i < outlineCount; i++) {
+
+        const t =
+            (i / outlineCount)
+            * Math.PI * 2;
+
+        const point =
+            heartXY(t);
+
+        particles.push({
+
+            x:
+                centerX
+                + point.x * scale,
+
+            y:
+                centerY
+                + point.y * scale,
+
+            word:
+                words[
+                    Math.floor(
+                        Math.random()
+                        * words.length
+                    )
+                ],
+
+            color:
+                colors[
+                    Math.floor(
+                        Math.random()
+                        * colors.length
+                    )
+                ],
+
+            size:
+                mobile
+                    ? 9 + Math.random() * 4
+                    : 11 + Math.random() * 6,
+
+            alpha: 0,
+
+            delay:
+                i * 2.2,
+
+            flicker:
+                Math.random() * Math.PI * 2,
+
+            type: "outline"
+        });
+    }
+
+
+    /*
+       FILL
+    */
+
+    for (let i = 0; i < fillCount; i++) {
+
+        const t =
+            Math.random()
+            * Math.PI * 2;
+
+        const r =
+            Math.sqrt(
+                Math.random()
+            ) * .82;
+
+        const point =
+            heartXY(t);
+
+        particles.push({
+
+            x:
+                centerX
+                + point.x * scale * r,
+
+            y:
+                centerY
+                + point.y * scale * r,
+
+            word:
+                words[
+                    Math.floor(
+                        Math.random()
+                        * words.length
+                    )
+                ],
+
+            color:
+                colors[
+                    Math.floor(
+                        Math.random()
+                        * colors.length
+                    )
+                ],
+
+            size:
+                mobile
+                    ? 8 + Math.random() * 4
+                    : 10 + Math.random() * 5,
+
+            alpha: 0,
+
+            delay:
+                outlineCount * 2.2
+                + 40
+                + Math.random() * 220,
+
+            flicker:
+                Math.random() * Math.PI * 2,
+
+            type: "fill"
+        });
+    }
+}
+
+
+/* =========================================================
+   DRAW GLOW TEXT
+========================================================= */
+
+function drawParticle(p, time) {
+
+    if (p.alpha <= 0) {
+        return;
+    }
+
+    const flicker =
+        p.alpha >= 1
+            ? .78
+              + .22 *
+              Math.sin(
+                  time * .003
+                  + p.flicker
+              )
+            : 1;
+
+    const alpha =
+        Math.max(
+            0,
+            Math.min(
+                1,
+                p.alpha * flicker
+            )
+        );
+
+    ctx.save();
+
+    ctx.globalAlpha = alpha;
+
+    ctx.font =
+        "bold " +
+        p.size +
+        "px Arial";
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    /*
+       Glow
+    */
+
+    ctx.shadowColor = p.color;
+    ctx.shadowBlur = 10;
+
+    ctx.fillStyle = p.color;
+
+    ctx.fillText(
+        p.word,
+        p.x,
+        p.y
+    );
+
+    /*
+       Extra glow
+    */
+
+    ctx.globalAlpha =
+        alpha * .18;
+
+    ctx.shadowBlur = 25;
+
+    ctx.fillText(
+        p.word,
+        p.x,
+        p.y
+    );
+
+    ctx.restore();
+}
+
+
+/* =========================================================
+   ANIMATION
+========================================================= */
+
+let animationStarted = false;
+let animationStartTime = 0;
+
+function animate(time) {
+
+    if (!animationStarted) {
+        requestAnimationFrame(animate);
+        return;
+    }
+
+    ctx.clearRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+    const elapsed =
+        time - animationStartTime;
+
+
+    /*
+       Fade particles in
+    */
+
+    for (const p of particles) {
+
+        const progress =
+            elapsed - p.delay;
+
+        if (progress > 0) {
+
+            p.alpha =
+                Math.min(
+                    1,
+                    progress / 700
+                );
+        }
+
+        drawParticle(
+            p,
+            time
+        );
+    }
+
+
+    /*
+       Soft red glow behind heart
+    */
+
+    if (elapsed > 300) {
+
+        const gradient =
+            ctx.createRadialGradient(
+                W / 2,
+                H / 2,
+                10,
+                W / 2,
+                H / 2,
+                Math.min(W, H) * .42
+            );
+
+        gradient.addColorStop(
+            0,
+            "rgba(255,40,100,.08)"
+        );
+
+        gradient.addColorStop(
+            .5,
+            "rgba(255,20,80,.035)"
+        );
+
+        gradient.addColorStop(
+            1,
+            "rgba(0,0,0,0)"
+        );
+
+        ctx.fillStyle = gradient;
+
+        ctx.fillRect(
+            0,
+            0,
+            W,
+            H
+        );
+    }
+
+
+    /*
+       Show final text after heart
+    */
+
+    const finalDelay = 1700;
+
+    const longestDelay =
+        particles.reduce(
+            (max, p) =>
+                Math.max(max, p.delay),
+            0
+        );
+
+    if (
+        elapsed >
+        longestDelay + finalDelay
+    ) {
+
+        document
+            .getElementById("finalText")
+            .classList.add("show");
+    }
+
+
+    requestAnimationFrame(animate);
+}
+
+
+/* =========================================================
+   OPEN BUTTON
+========================================================= */
+
+const openBtn =
+    document.getElementById("openBtn");
+
+const intro =
+    document.getElementById("intro");
+
+openBtn.addEventListener(
+    "click",
+    function() {
+
+        /*
+           Hide intro
+        */
+
+        intro.classList.add("hide");
+
+        /*
+           Start heart animation
+        */
+
+        setTimeout(() => {
+
+            createParticles();
+
+            animationStarted = true;
+
+            animationStartTime =
+                performance.now();
+
+            requestAnimationFrame(
+                animate
+            );
+
+        }, 700);
+
+    }
+);
+
+
+/* =========================================================
+   PREVENT DOUBLE TAP / ZOOM
+========================================================= */
+
+document.addEventListener(
+    "dblclick",
+    function(e) {
+        e.preventDefault();
+    },
+    {
+        passive: false
+    }
+);
+
+</script>
+
+</body>
+</html>
